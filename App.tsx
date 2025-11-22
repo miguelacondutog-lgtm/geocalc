@@ -25,7 +25,12 @@ const App: React.FC = () => {
 
   // Save history whenever it changes
   useEffect(() => {
-    localStorage.setItem('geocalc_history', JSON.stringify(savedMeasurements));
+    try {
+      localStorage.setItem('geocalc_history', JSON.stringify(savedMeasurements));
+    } catch (e) {
+      console.error("Failed to save history to local storage", e);
+      // If storage is full, we could notify the user here, but we avoid spamming alerts
+    }
   }, [savedMeasurements]);
 
   const handleSaveMeasurement = (data: Omit<SavedMeasurement, 'id' | 'timestamp'>) => {
@@ -35,15 +40,21 @@ const App: React.FC = () => {
       return;
     }
 
+    // Robust ID generation
+    const id = (typeof crypto !== 'undefined' && crypto.randomUUID) 
+      ? crypto.randomUUID() 
+      : Math.random().toString(36).substring(2) + Date.now().toString(36);
+
     const newMeasurement: SavedMeasurement = {
       ...data,
-      id: crypto.randomUUID(),
+      id,
       timestamp: Date.now(),
     };
 
     setSavedMeasurements(prev => [newMeasurement, ...prev]);
-    // Optionally notify user
-    // alert("Measurement saved!");
+    
+    // Open history panel to confirm save to user
+    setIsHistoryOpen(true);
   };
 
   const handleDeleteMeasurement = (id: string) => {
@@ -59,13 +70,14 @@ const App: React.FC = () => {
       // Reset the trigger after a moment so re-clicking works if needed (though modal closes)
       setTimeout(() => setMeasurementToLoad(null), 500);
     } else {
-      // For photo, we currently don't save the image data, so we can't restore fully.
+      // For photo, we currently don't save the image data (it would be too large for localStorage), 
+      // so we can't restore fully to the canvas, just view the result.
       alert("Photo measurements store results only and cannot be fully restored to the canvas.");
     }
   };
 
   return (
-    <div className="h-screen w-screen flex flex-col bg-slate-50 font-sans text-slate-900 relative overflow-hidden">
+    <div className="h-[100dvh] w-screen flex flex-col bg-slate-50 font-sans text-slate-900 relative overflow-hidden">
       {/* History Modal */}
       <MeasurementHistory 
         isOpen={isHistoryOpen}
@@ -75,8 +87,8 @@ const App: React.FC = () => {
         onLoad={handleLoadMeasurement}
       />
 
-      {/* Header */}
-      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm">
+      {/* Header - Safe area padding added for mobile notches */}
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50 shadow-sm shrink-0 pt-safe-top">
         <div className="max-w-screen-2xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-2">
@@ -135,7 +147,7 @@ const App: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 overflow-hidden relative">
+      <main className="flex-1 overflow-hidden relative flex flex-col">
         {activeTab === 'photo' ? (
           <AreaMeasurer onSave={handleSaveMeasurement} />
         ) : (

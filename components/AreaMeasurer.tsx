@@ -99,11 +99,11 @@ export const AreaMeasurer: React.FC<Props> = ({ onSave }) => {
     };
   }, []);
 
-  const getRelativePoint = (e: React.MouseEvent): Point | null => {
+  const getRelativePoint = (clientX: number, clientY: number): Point | null => {
     if (!imageRef.current || !containerRef.current) return null;
     const rect = imageRef.current.getBoundingClientRect();
-    const x = e.clientX - rect.left;
-    const y = e.clientY - rect.top;
+    const x = clientX - rect.left;
+    const y = clientY - rect.top;
     
     // Clamp to image bounds
     return {
@@ -112,9 +112,13 @@ export const AreaMeasurer: React.FC<Props> = ({ onSave }) => {
     };
   };
 
-  const handleClick = (e: React.MouseEvent) => {
+  const handlePointerDown = (e: React.PointerEvent) => {
     if (!imageSrc) return;
-    const point = getRelativePoint(e);
+    // Prevent default to handle some touch/scroll conflicts if needed, 
+    // but we usually want to allow scrolling unless drawing.
+    // e.preventDefault(); 
+
+    const point = getRelativePoint(e.clientX, e.clientY);
     if (!point) return;
 
     if (mode === 'scale') {
@@ -212,7 +216,7 @@ export const AreaMeasurer: React.FC<Props> = ({ onSave }) => {
       )}
 
       {/* Toolbar */}
-      <div className="bg-white border-b border-slate-200 p-4 flex flex-wrap gap-4 items-center justify-between z-10 shadow-sm">
+      <div className="bg-white border-b border-slate-200 p-4 flex flex-wrap gap-4 items-center justify-between z-10 shadow-sm shrink-0">
         <div className="flex items-center gap-4">
           <label className="btn-secondary flex items-center gap-2 cursor-pointer px-4 py-2 rounded-lg bg-slate-100 hover:bg-slate-200 transition-colors text-slate-700 font-medium text-sm">
             <Upload className="w-4 h-4" />
@@ -275,7 +279,7 @@ export const AreaMeasurer: React.FC<Props> = ({ onSave }) => {
 
       <div className="flex-1 flex overflow-hidden">
         {/* Main Workspace */}
-        <div className="flex-1 bg-slate-100 relative overflow-auto flex items-center justify-center p-8">
+        <div className="flex-1 bg-slate-100 relative overflow-auto flex items-center justify-center p-8 touch-pan-x touch-pan-y">
           {!imageSrc ? (
             <div className="text-center text-slate-400">
               <div className="flex justify-center gap-4 mb-4">
@@ -295,8 +299,8 @@ export const AreaMeasurer: React.FC<Props> = ({ onSave }) => {
                 src={imageSrc} 
                 alt="Workspace" 
                 className="max-w-none block"
-                style={{ maxHeight: '70vh' }}
-                onMouseDown={handleClick}
+                style={{ maxHeight: '70vh', touchAction: 'none' }}
+                onPointerDown={handlePointerDown}
                 draggable={false}
               />
               
@@ -337,7 +341,7 @@ export const AreaMeasurer: React.FC<Props> = ({ onSave }) => {
 
         {/* Right Sidebar - Results Only */}
         {imageSrc && (
-          <div className="w-80 bg-white border-l border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto shadow-lg">
+          <div className="w-80 bg-white border-l border-slate-200 p-6 flex flex-col gap-6 overflow-y-auto shadow-lg shrink-0">
             <div>
               <h3 className="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-blue-600" />
