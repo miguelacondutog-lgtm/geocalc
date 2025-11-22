@@ -1,12 +1,21 @@
 import { GoogleGenAI } from "@google/genai";
 
+// Robustly retrieve API Key handling both Vite (process.env replaced) and standard process.env
+const getApiKey = (): string => {
+  try {
+    return process.env.API_KEY || '';
+  } catch (e) {
+    return '';
+  }
+};
+
 export const analyzeArea = async (
   imageBase64: string, 
   prompt: string, 
   areaInfo: string
 ): Promise<string> => {
   // Uses standard Flash model
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY }); 
+  const ai = new GoogleGenAI({ apiKey: getApiKey() }); 
   
   const response = await ai.models.generateContent({
     model: 'gemini-2.5-flash',
@@ -31,7 +40,7 @@ export const generateVeoVideo = async (
     await window.aistudio.openSelectKey();
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
   let operation = await ai.models.generateVideos({
     model: 'veo-3.1-fast-generate-preview',
@@ -58,7 +67,7 @@ export const generateVeoVideo = async (
   }
 
   // Fetch the video bytes securely
-  const response = await fetch(`${downloadLink}&key=${process.env.API_KEY}`);
+  const response = await fetch(`${downloadLink}&key=${getApiKey()}`);
   if (!response.ok) {
     throw new Error("Failed to download generated video.");
   }
@@ -76,7 +85,7 @@ export const generateProImage = async (
     await window.aistudio.openSelectKey();
   }
 
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const ai = new GoogleGenAI({ apiKey: getApiKey() });
 
   const response = await ai.models.generateContent({
     model: 'gemini-3-pro-image-preview',
