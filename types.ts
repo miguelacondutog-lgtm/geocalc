@@ -39,10 +39,4 @@ declare global {
     hasSelectedApiKey: () => Promise<boolean>;
     openSelectKey: () => Promise<void>;
   }
-  
-  // Add Leaflet to global scope since we load it via script tag
-  var L: any;
-  
-  // Add html2canvas
-  var html2canvas: any;
 }

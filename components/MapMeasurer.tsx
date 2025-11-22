@@ -2,6 +2,8 @@ import React, { useEffect, useRef, useState } from 'react';
 import { GeoPoint, AreaUnit, SavedMeasurement } from '../types';
 import * as Geometry from '../utils/geometry';
 import { Trash2, Calculator, Crosshair, Locate, Ruler, Circle as CircleIcon, Hexagon, Save, ChevronDown, ChevronUp, Loader2 } from 'lucide-react';
+import L from 'leaflet';
+import html2canvas from 'html2canvas';
 
 interface Props {
   onSave: (data: Omit<SavedMeasurement, 'id' | 'timestamp'>) => void;
@@ -10,11 +12,11 @@ interface Props {
 
 export const MapMeasurer: React.FC<Props> = ({ onSave, loadedRecord }) => {
   const mapRef = useRef<HTMLDivElement>(null);
-  const mapInstanceRef = useRef<any>(null);
-  const markersRef = useRef<any[]>([]);
-  const labelsRef = useRef<any[]>([]);
-  const midpointsRef = useRef<any[]>([]);
-  const shapeRef = useRef<any>(null); // Polygon or Circle
+  const mapInstanceRef = useRef<L.Map | null>(null);
+  const markersRef = useRef<L.Marker[]>([]);
+  const labelsRef = useRef<L.Layer[]>([]);
+  const midpointsRef = useRef<L.Marker[]>([]);
+  const shapeRef = useRef<L.Polygon | L.Polyline | L.Circle | null>(null);
   
   const [points, setPoints] = useState<GeoPoint[]>([]);
   const [isLocating, setIsLocating] = useState(false);
@@ -82,7 +84,7 @@ export const MapMeasurer: React.FC<Props> = ({ onSave, loadedRecord }) => {
     
     const map = mapInstanceRef.current;
     
-    const handleClick = (e: any) => {
+    const handleClick = (e: L.LeafletMouseEvent) => {
       if (shapeMode === 'circle' && points.length >= 2) {
         // Circle only allows 2 points (Center + Radius)
         return;
@@ -136,8 +138,8 @@ export const MapMeasurer: React.FC<Props> = ({ onSave, loadedRecord }) => {
       }).addTo(map);
 
       // Handle drag
-      marker.on('dragend', (e: any) => {
-        const { lat, lng } = e.target.getLatLng();
+      marker.on('dragend', (e: L.DragEndEvent) => {
+        const { lat, lng } = (e.target as L.Marker).getLatLng();
         updatePoint(index, { lat, lng });
       });
 
@@ -218,8 +220,8 @@ export const MapMeasurer: React.FC<Props> = ({ onSave, loadedRecord }) => {
             zIndexOffset: 900
           }).addTo(map);
 
-          midMarker.on('dragend', (e: any) => {
-            const { lat, lng } = e.target.getLatLng();
+          midMarker.on('dragend', (e: L.DragEndEvent) => {
+            const { lat, lng } = (e.target as L.Marker).getLatLng();
             // Insert new point at index i + 1
             setPoints(prev => {
               const newPoints = [...prev];
@@ -280,7 +282,7 @@ export const MapMeasurer: React.FC<Props> = ({ onSave, loadedRecord }) => {
     
     mapInstanceRef.current.locate({ setView: true, maxZoom: 18 });
     
-    mapInstanceRef.current.once('locationfound', (e: any) => {
+    mapInstanceRef.current.once('locationfound', (e: L.LocationEvent) => {
       setIsLocating(false);
     });
     
@@ -341,9 +343,9 @@ export const MapMeasurer: React.FC<Props> = ({ onSave, loadedRecord }) => {
     setIsSaving(true);
     let thumbnail: string | undefined = undefined;
 
-    if (mapRef.current && window.html2canvas) {
+    if (mapRef.current) {
       try {
-        const canvas = await window.html2canvas(mapRef.current, {
+        const canvas = await html2canvas(mapRef.current, {
           useCORS: true, // Critical for map tiles
           allowTaint: false,
           logging: false,

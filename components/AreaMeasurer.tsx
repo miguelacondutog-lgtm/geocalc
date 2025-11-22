@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { Point, AreaUnit, SavedMeasurement } from '../types';
 import * as Geometry from '../utils/geometry';
 import { Trash2, Calculator, Ruler, Upload, Camera, X, Save, Loader2 } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 interface Props {
   onSave: (data: Omit<SavedMeasurement, 'id' | 'timestamp'>) => void;
@@ -155,9 +156,9 @@ export const AreaMeasurer: React.FC<Props> = ({ onSave }) => {
     let thumbnail: string | undefined = undefined;
     
     // Generate thumbnail using html2canvas
-    if (containerRef.current && window.html2canvas) {
+    if (containerRef.current) {
       try {
-        const canvas = await window.html2canvas(containerRef.current, {
+        const canvas = await html2canvas(containerRef.current, {
           useCORS: true,
           logging: false,
           scale: 0.5 // Reduce resolution for thumbnail
