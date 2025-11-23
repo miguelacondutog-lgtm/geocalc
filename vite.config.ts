@@ -11,9 +11,7 @@ export default defineConfig(({ mode }) => {
       outDir: 'dist',
     },
     define: {
-      'process.env.API_KEY': JSON.stringify(env.API_KEY || env.VITE_API_KEY || ''),
-      // Polyfill process.env for other usages if necessary, though API_KEY is the main one
-      'process.env': {} 
+      'process.env.API_KEY': JSON.stringify(env.API_KEY || env.VITE_API_KEY || '')
     }
   };
 });
