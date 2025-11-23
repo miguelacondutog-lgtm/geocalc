@@ -162,7 +162,7 @@ export const MapMeasurer: React.FC<Props> = ({ onSave, loadedRecord }) => {
     if (shapeMode === 'polygon') {
       // 1. Polygon / Polyline Rendering
       if (points.length > 1) {
-        const latlngs = points.map(p => [p.lat, p.lng]);
+        const latlngs = points.map(p => [p.lat, p.lng] as [number, number]);
         
         if (points.length > 2) {
           shapeRef.current = L.polygon(latlngs, {

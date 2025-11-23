@@ -9,7 +9,7 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "node deploy.js"
   },
   "dependencies": {
     "lucide-react": "^0.344.0",
@@ -22,7 +22,8 @@
     "@types/leaflet": "^1.9.8",
     "@types/react": "^18.2.64",
     "@types/react-dom": "^18.2.21",
-    "@types/html2canvas": "^1.4.1",
+    "@types/node": "^20.11.24",
+    "@types/html2canvas": "latest",
     "@vitejs/plugin-react": "^4.2.1",
     "typescript": "^5.2.2",
     "vite": "^5.1.6",
