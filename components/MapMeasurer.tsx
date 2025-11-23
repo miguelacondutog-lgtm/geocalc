@@ -138,7 +138,7 @@ export const MapMeasurer: React.FC<Props> = ({ onSave, loadedRecord }) => {
       }).addTo(map);
 
       // Handle drag
-      marker.on('dragend', (e: L.DragEndEvent) => {
+      marker.on('dragend', (e: L.LeafletEvent) => {
         const { lat, lng } = (e.target as L.Marker).getLatLng();
         updatePoint(index, { lat, lng });
       });
@@ -162,7 +162,7 @@ export const MapMeasurer: React.FC<Props> = ({ onSave, loadedRecord }) => {
     if (shapeMode === 'polygon') {
       // 1. Polygon / Polyline Rendering
       if (points.length > 1) {
-        const latlngs = points.map(p => [p.lat, p.lng]);
+        const latlngs: L.LatLngTuple[] = points.map(p => [p.lat, p.lng] as L.LatLngTuple);
         
         if (points.length > 2) {
           shapeRef.current = L.polygon(latlngs, {
@@ -220,7 +220,7 @@ export const MapMeasurer: React.FC<Props> = ({ onSave, loadedRecord }) => {
             zIndexOffset: 900
           }).addTo(map);
 
-          midMarker.on('dragend', (e: L.DragEndEvent) => {
+          midMarker.on('dragend', (e: L.LeafletEvent) => {
             const { lat, lng } = (e.target as L.Marker).getLatLng();
             // Insert new point at index i + 1
             setPoints(prev => {
@@ -243,7 +243,10 @@ export const MapMeasurer: React.FC<Props> = ({ onSave, loadedRecord }) => {
           radius = Geometry.calculateGeoDistance(center, points[1]);
           
           // Draw Radius Line
-          const line = L.polyline([[center.lat, center.lng], [points[1].lat, points[1].lng]], {
+          const line = L.polyline([
+            [center.lat, center.lng] as L.LatLngTuple,
+            [points[1].lat, points[1].lng] as L.LatLngTuple
+          ] as L.LatLngTuple[], {
              color: '#3B82F6',
              dashArray: '4, 6',
              weight: 2,
