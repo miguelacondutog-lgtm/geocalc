@@ -3,7 +3,7 @@
   "private": true,
   "version": "1.0.0",
   "type": "module",
-  "homepage": "https://miguelacondutog-lgtm.github.io/geocalc/",
+  "homepage": "https://github.com/condutz-ship-it/geo",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
