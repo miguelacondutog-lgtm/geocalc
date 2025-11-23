@@ -30,6 +30,10 @@ try {
 
   // Initialize fresh git repo in dist
   runInDist('git init');
+
+  // Set git config for the dummy repo to prevent "Author identity unknown" error
+  runInDist('git config user.name "Deploy Bot"');
+  runInDist('git config user.email "deploy@example.com"');
   
   // Create/Checkout gh-pages branch
   runInDist('git checkout -B gh-pages');
